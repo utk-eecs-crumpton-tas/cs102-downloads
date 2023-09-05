@@ -15,15 +15,6 @@ RESET='\e[0m'
 
 ZSHRC=~/.zshrc
 
-OMZ_DIR=~/.oh-my-zsh
-OMZ_PLUGINS=$OMZ_DIR/custom/plugins
-
-# APPS_DIR=~/Apps
-# NVIM_APPIMAGE=$APPS_DIR/nvim.appimage
-
-NVIM_CONFIG=~/.config/nvim
-NVIM_INIT_LUA=$NVIM_CONFIG/init.lua
-
 print_success() {
     local message="$@"
     echo -e "${DARK_GREEN}Success${RESET}: $message"
@@ -41,9 +32,12 @@ print_install_log() {
 }
 
 install_omz() {
+    local omz_dir=~/.oh-my-zsh
+    local omz_plugins=$omz_dir/custom/plugins
+
     print_install_log 'Oh My Zsh'
 
-    if [[ -d $OMZ_DIR ]] && ! rm -rf $OMZ_DIR; then
+    if [[ -d $omz_dir ]] && ! rm -rf $omz_dir; then
         print_error 'Failed to remove existing Oh My Zsh'
         exit 1
     fi
@@ -56,17 +50,17 @@ install_omz() {
     print_success 'Oh My Zsh installed'
     print_install_log 'Oh My Zsh plugins'
 
-    if ! git clone https://github.com/tamcore/autoupdate-oh-my-zsh-plugins.git $OMZ_PLUGINS/autoupdate; then
+    if ! git clone https://github.com/tamcore/autoupdate-oh-my-zsh-plugins.git $omz_plugins/autoupdate; then
         print_error 'Cloning zsh autoupdate install failed'
         exit 1
     fi
 
-    if ! git clone https://github.com/zsh-users/zsh-autosuggestions.git $OMZ_PLUGINS/zsh-autosuggestions; then
+    if ! git clone https://github.com/zsh-users/zsh-autosuggestions.git $omz_plugins/zsh-autosuggestions; then
         print_error 'Cloning zsh autosuggestions install failed'
         exit 1
     fi
 
-    if ! git clone https://github.com/zsh-users/zsh-syntax-highlighting.git $OMZ_PLUGINS/zsh-syntax-highlighting; then
+    if ! git clone https://github.com/zsh-users/zsh-syntax-highlighting.git $omz_plugins/zsh-syntax-highlighting; then
         print_error 'Cloning zsh syntax highlighting install failed'
         exit 1
     fi
@@ -79,10 +73,13 @@ install_omz() {
     print_success 'Zsh plugins installed'
 }
 
-# install_nvim() {
+# install_nvim_appimage() {
+#     local apps_dir=~/Apps
+#     local nvim_appimage=$apps_dir/nvim.appimage
+
 #     print_install_log 'Neovim'
 
-#     if ! mkdir -p $APPS_DIR; then
+#     if ! mkdir -p $apps_dir; then
 #         print_error 'Creating ~/Apps failed'
 #         exit 1
 #     fi
@@ -92,7 +89,7 @@ install_omz() {
 #         exit 1
 #     fi
 
-#     if ! chmod u+x $NVIM_APPIMAGE; then
+#     if ! chmod u+x $nvim_appimage; then
 #         print_error 'Neovim chmod failed'
 #         exit 1
 #     fi
@@ -106,15 +103,17 @@ install_omz() {
 # }
 
 install_nvim_kickstart() {
+    local nvim_config_dir=~/.config/nvim
+    local nvim_init_lua=$nvim_config_dir/init.lua
     print_install_log 'Neovim kickstart'
 
-    if ! mkdir -p $NVIM_CONFIG; then
+    if ! mkdir -p $nvim_config_dir; then
         print_error 'Failed to create nvim config directory'
         exit 1
     fi
 
     if ! curl https://raw.githubusercontent.com/nvim-lua/kickstart.nvim/master/init.lua |
-        sed "s/{ import = 'custom.plugins' }/-- { import = 'custom.plugins' }/" >$NVIM_INIT_LUA; then
+        sed "s/{ import = 'custom.plugins' }/-- { import = 'custom.plugins' }/" >$nvim_init_lua; then
         print_error 'Downloading nvim kickstart init.lua failed'
         exit 1
     fi
@@ -123,7 +122,7 @@ install_nvim_kickstart() {
 }
 
 install_omz
-# install_nvim
+# install_nvim_appimage
 install_nvim_kickstart
 
 echo
@@ -131,8 +130,8 @@ print_success 'Installation complete!'
 echo -e "run ${DARK_BLUE}exec zsh${RESET} to restart the shell and start using oh-my-zsh"
 echo -e "run ${DARK_BLUE}nvim${RESET} to start using neovim"
 echo
-echo -e "open your .zshrc file with ${DARK_BLUE}nvim $ZSHRC${RESET} to customize your zsh config"
-echo -e "open your init.lua file with ${DARK_BLUE}nvim $NVIM_INIT_LUA${RESET} to customize your nvim config"
+echo -e "open your .zshrc file with ${DARK_BLUE}nvim ~/.zshrc${RESET} to customize your zsh config"
+echo -e "open your init.lua file with ${DARK_BLUE}nvim ~/.config/nvim/init.lua${RESET} to customize your nvim config"
 echo
 echo -e 'watch this video to learn more about nvim kickstart'
 echo -e "${DARK_MAGENTA}https://youtu.be/stqUbv-5u2s${RESET}"
