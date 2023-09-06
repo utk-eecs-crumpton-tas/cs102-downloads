@@ -103,7 +103,7 @@ install_nvim_appimage() {
         exit 1
     fi
 
-    if grep "$nvim_alias" $ZSHRC >/dev/null; then
+    if grep -q "$nvim_alias" $ZSHRC; then
         print_skipping_log 'nvim alias already exists in ~/.zshrc'
         return
     fi
