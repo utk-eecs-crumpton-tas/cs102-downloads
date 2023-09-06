@@ -5,7 +5,7 @@ DARK_GREEN='\e[38;5;2m'
 DARK_BLUE='\e[38;5;4m'
 DARK_MAGENTA='\e[38;5;5m'
 # DARK_BLACK='\e[38;5;0m'
-# DARK_YELLOW='\e[38;5;3m'
+DARK_YELLOW='\e[38;5;3m'
 # DARK_CYAN='\e[38;5;6m'
 # DARK_WHITE='\e[38;5;7m'
 
@@ -31,15 +31,20 @@ print_install_log() {
     echo -e "${DARK_BLUE}Installing${RESET}: $message"
 }
 
+print_skipping_log() {
+    local message="$@"
+    echo -e "${DARK_YELLOW}Skipping${RESET}: $message"
+}
+
 install_omz() {
     local omz_dir=~/.oh-my-zsh
     local omz_plugins=$omz_dir/custom/plugins
 
     print_install_log 'Oh My Zsh'
 
-    if [[ -d $omz_dir ]] && ! rm -rf $omz_dir; then
-        print_error 'Failed to remove existing Oh My Zsh'
-        exit 1
+    if [[ -d $omz_dir ]]; then
+        print_skipping_log '~/.oh-my-zsh already exists'
+        return
     fi
 
     if ! curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh | sh; then
@@ -48,6 +53,8 @@ install_omz() {
     fi
 
     print_success 'Oh My Zsh installed'
+
+    echo
     print_install_log 'Oh My Zsh plugins'
 
     if ! git clone https://github.com/tamcore/autoupdate-oh-my-zsh-plugins.git $omz_plugins/autoupdate; then
@@ -76,7 +83,9 @@ install_omz() {
 install_nvim_appimage() {
     local apps_dir=~/Apps
     local nvim_appimage=$apps_dir/nvim.appimage
+    local nvim_alias="alias nvim='~/Apps/nvim.appimage'"
 
+    echo
     print_install_log 'Neovim'
 
     if ! mkdir -p $apps_dir; then
@@ -94,6 +103,11 @@ install_nvim_appimage() {
         exit 1
     fi
 
+    if grep "$nvim_alias" $ZSHRC >/dev/null; then
+        print_skipping_log 'nvim alias already exists in ~/.zshrc'
+        return
+    fi
+
     if ! echo "alias nvim='~/Apps/nvim.appimage'" >>$ZSHRC; then
         print_error 'Adding nvim alias failed'
         exit 1
@@ -107,7 +121,13 @@ install_nvim_kickstart() {
     local nvim_config_dir=~/.config/nvim
     # local nvim_init_lua=$nvim_config_dir/init.lua
 
+    echo
     print_install_log 'Neovim kickstart'
+
+    if [[ -d $nvim_config_dir ]]; then
+        print_skipping_log '~/.config/nvim already exists'
+        return
+    fi
 
     if ! mkdir -p $config_dir; then
         print_error 'Creating ~/.config failed'
@@ -134,7 +154,6 @@ install_nvim_kickstart
 
 echo
 print_success 'Installation complete!'
-echo -e "run ${DARK_BLUE}exec zsh${RESET} to restart the shell and start using oh-my-zsh"
 echo -e "run ${DARK_BLUE}nvim${RESET} to start using neovim"
 echo
 echo -e "open your .zshrc file with ${DARK_BLUE}nvim ~/.zshrc${RESET} to customize your zsh config"
@@ -143,3 +162,5 @@ echo
 echo -e 'watch this video to learn more about nvim kickstart'
 echo -e "${DARK_MAGENTA}https://youtu.be/stqUbv-5u2s${RESET}"
 echo
+
+exec zsh
