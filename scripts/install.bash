@@ -14,6 +14,8 @@ DARK_YELLOW='\e[38;5;3m'
 RESET='\e[0m'
 
 ZSHRC=~/.zshrc
+APPS_DIR=~/Apps
+NVIM_APPIMAGE=$APPS_DIR/nvim.appimage
 
 print_success() {
     local message="$@"
@@ -38,11 +40,11 @@ print_skipping_log() {
 
 install_omz() {
     local omz_dir=~/.oh-my-zsh
-    local omz_plugins=$omz_dir/custom/plugins
+    local omz_plugins="$omz_dir/custom/plugins"
 
     print_install_log 'Oh My Zsh'
 
-    if [[ -d $omz_dir ]]; then
+    if [[ -d "$omz_dir" ]]; then
         print_skipping_log '~/.oh-my-zsh already exists'
         return
     fi
@@ -57,22 +59,22 @@ install_omz() {
     echo
     print_install_log 'Oh My Zsh plugins'
 
-    if ! git clone https://github.com/tamcore/autoupdate-oh-my-zsh-plugins.git $omz_plugins/autoupdate; then
+    if ! git clone https://github.com/tamcore/autoupdate-oh-my-zsh-plugins.git "$omz_plugins/autoupdate"; then
         print_error 'Cloning zsh-autoupdate failed'
         exit 1
     fi
 
-    if ! git clone https://github.com/zsh-users/zsh-autosuggestions.git $omz_plugins/zsh-autosuggestions; then
+    if ! git clone https://github.com/zsh-users/zsh-autosuggestions.git "$omz_plugins/zsh-autosuggestions"; then
         print_error 'Cloning zsh-autosuggestions failed'
         exit 1
     fi
 
-    if ! git clone https://github.com/zsh-users/zsh-syntax-highlighting.git $omz_plugins/zsh-syntax-highlighting; then
+    if ! git clone https://github.com/zsh-users/zsh-syntax-highlighting.git "$omz_plugins/zsh-syntax-highlighting"; then
         print_error 'Cloning zsh-syntax-highlighting failed'
         exit 1
     fi
 
-    if ! sed -i 's/plugins=(\(.*\))/plugins=(\1 autoupdate zsh-autosuggestions zsh-syntax-highlighting)/' $ZSHRC; then
+    if ! sed -i 's/plugins=(\(.*\))/plugins=(\1 autoupdate zsh-autosuggestions zsh-syntax-highlighting)/' "$ZSHRC"; then
         print_error 'Adding omz plugins to .zshrc failed'
         exit 1
     fi
@@ -81,14 +83,12 @@ install_omz() {
 }
 
 install_nvim_appimage() {
-    local apps_dir=~/Apps
-    local nvim_appimage=$apps_dir/nvim.appimage
     local nvim_alias="alias nvim='~/Apps/nvim.appimage'"
 
     echo
     print_install_log 'Neovim'
 
-    if ! mkdir -p $apps_dir; then
+    if ! mkdir -p "$APPS_DIR"; then
         print_error 'Creating ~/Apps failed'
         exit 1
     fi
@@ -98,17 +98,17 @@ install_nvim_appimage() {
         exit 1
     fi
 
-    if ! chmod u+x $nvim_appimage; then
+    if ! chmod u+x "$NVIM_APPIMAGE"; then
         print_error 'Making nvim.appimage executable failed'
         exit 1
     fi
 
-    if grep -q "$nvim_alias" $ZSHRC; then
+    if grep -q "$nvim_alias" "$ZSHRC"; then
         print_skipping_log 'nvim alias already exists in ~/.zshrc'
         return
     fi
 
-    if ! echo "alias nvim='~/Apps/nvim.appimage'" >>$ZSHRC; then
+    if ! echo "alias nvim='~/Apps/nvim.appimage'" >>"$ZSHRC"; then
         print_error 'Adding nvim alias failed'
         exit 1
     fi
@@ -124,43 +124,57 @@ install_nvim_kickstart() {
     echo
     print_install_log 'Neovim kickstart'
 
-    if [[ -d $nvim_config_dir ]]; then
+    if [[ -d "$nvim_config_dir" ]]; then
         print_skipping_log '~/.config/nvim already exists'
         return
     fi
 
-    if ! mkdir -p $config_dir; then
+    if ! mkdir -p "$config_dir"; then
         print_error 'Creating ~/.config failed'
         exit 1
     fi
 
-    if ! mkdir -p $nvim_config_dir; then
+    if ! mkdir -p "$nvim_config_dir"; then
         print_error 'Creating ~/.config/nvim failed'
         exit 1
     fi
 
-    if ! git clone https://github.com/nvim-lua/kickstart.nvim.git $nvim_config_dir; then
-        # if ! curl https://raw.githubusercontent.com/nvim-lua/kickstart.nvim/master/init.lua -o $nvim_init_lua; then
+    # if ! curl https://raw.githubusercontent.com/nvim-lua/kickstart.nvim/master/init.lua -o $nvim_init_lua; then
+    if ! git clone https://github.com/nvim-lua/kickstart.nvim.git "$nvim_config_dir"; then
         print_error 'Cloning kickstart.nvim failed'
+        exit 1
+    fi
+
+    if ! "$NVIM_APPIMAGE" --headless -c 'Lazy install' -c 'qa!'; then
+        print_error 'Neovim kickstart lazy install failed'
+        exit 1
+    fi
+
+    if ! "$NVIM_APPIMAGE" --headless -c 'MasonInstall clangd' -c 'qa!'; then
+        print_error 'Neovim kickstart mason install clangd failed'
         exit 1
     fi
 
     print_success 'Neovim kickstart installed'
 }
 
-install_omz
-install_nvim_appimage
-install_nvim_kickstart
+install() {
+    install_omz
+    install_nvim_appimage
+    install_nvim_kickstart
 
-echo
-print_success 'Installation complete!'
-echo -e "run ${DARK_BLUE}nvim${RESET} to start using neovim"
-echo
-echo -e "open your .zshrc file with ${DARK_BLUE}nvim ~/.zshrc${RESET} to customize your zsh config"
-echo -e "open your init.lua file with ${DARK_BLUE}nvim ~/.config/nvim/init.lua${RESET} to customize your nvim config"
-echo
-echo -e 'watch this video to learn more about nvim kickstart'
-echo -e "${DARK_MAGENTA}https://youtu.be/stqUbv-5u2s${RESET}"
-echo
+    echo
+    print_success 'Installation complete!'
+    echo -e "run ${DARK_BLUE}nvim${RESET} to start using neovim"
+    echo
+    echo -e "open your .zshrc file with ${DARK_BLUE}nvim ~/.zshrc${RESET} to customize your zsh config"
+    echo -e "open your init.lua file with ${DARK_BLUE}nvim ~/.config/nvim/init.lua${RESET} to customize your nvim config"
+    echo
+    echo -e 'watch this video to learn more about nvim kickstart'
+    echo -e "${DARK_MAGENTA}https://youtu.be/stqUbv-5u2s${RESET}"
+    echo
 
-exec zsh
+    exec zsh
+}
+
+install
