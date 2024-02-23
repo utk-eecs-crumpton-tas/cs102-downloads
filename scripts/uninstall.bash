@@ -9,3 +9,5 @@ rm ~/.zshrc
 if [[ -f ~/.zshrc.pre-oh-my-zsh ]]; then
     mv .zshrc.pre-oh-my-zsh ~/.zshrc
 fi
+
+exec zsh
