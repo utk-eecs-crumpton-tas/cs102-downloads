@@ -145,6 +145,8 @@ install_nvim_kickstart() {
         exit 1
     fi
 
+    echo
+    print_install_log 'Neovim plugins'
     if ! "$NVIM_APPIMAGE" --headless -c 'Lazy install' -c 'qa!'; then
         print_error 'Neovim kickstart lazy install failed'
         exit 1
