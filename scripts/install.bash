@@ -178,7 +178,7 @@ install() {
     echo -e "open your init.lua file with ${DARK_BLUE}nvim ~/.config/nvim/init.lua${RESET} to customize your nvim config"
     echo
     echo -e 'watch this video to learn more about nvim kickstart'
-    echo -e "${DARK_MAGENTA}https://youtu.be/stqUbv-5u2s${RESET}"
+    echo -e "${DARK_MAGENTA}https://youtu.be/m8C0Cq9Uv9o?si=z5TTwNiZvcA8a54s${RESET}"
     echo
 
     exec zsh
