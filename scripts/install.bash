@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# bash -c "$(curl -fsSL https://raw.githubusercontent.com/utk-eecs-crumpton-tas/cs102-downloads/main/apps/nvim.appimage)"
+
 DARK_RED='\e[38;5;1m'
 DARK_GREEN='\e[38;5;2m'
 DARK_BLUE='\e[38;5;4m'
@@ -93,7 +95,10 @@ install_nvim_appimage() {
         exit 1
     fi
 
-    if ! curl -L https://github.com/neovim/neovim/releases/latest/download/nvim.appimage -o ~/Apps/nvim.appimage; then
+    # The lab machines don't have GBLIC 2.29 which is needed by the latest (v0.10.0) version of nvim
+    # so this is a self hosted version of v0.9.5
+    # if ! curl -OL https://github.com/neovim/neovim/releases/latest/download/nvim.appimage -o ~/Apps/nvim.appimage; then
+    if ! curl -fsSL https://raw.githubusercontent.com/utk-eecs-crumpton-tas/cs102-downloads/main/apps/nvim.appimage -o ~/Apps/nvim.appimage; then
         print_error 'Downloading nvim.appimage failed'
         exit 1
     fi
