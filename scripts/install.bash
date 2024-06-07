@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# bash -c "$(curl -fsSL https://raw.githubusercontent.com/utk-eecs-crumpton-tas/cs102-downloads/main/apps/nvim.appimage)"
+set -euo pipefail
 
 DARK_RED='\e[38;5;1m'
 DARK_GREEN='\e[38;5;2m'
@@ -20,23 +20,23 @@ APPS_DIR=~/Apps
 NVIM_APPIMAGE=$APPS_DIR/nvim.appimage
 
 print_success() {
-    local message="$@"
+    local message="$*"
     echo -e "${DARK_GREEN}Success${RESET}: $message"
 }
 
 print_error() {
-    local message="$@"
+    local message="$*"
     echo -e "${DARK_RED}Error${RESET}: $message" >&2
 
 }
 
 print_install_log() {
-    local message="$@"
+    local message="$*"
     echo -e "${DARK_BLUE}Installing${RESET}: $message"
 }
 
 print_skipping_log() {
-    local message="$@"
+    local message="$*"
     echo -e "${DARK_YELLOW}Skipping${RESET}: $message"
 }
 
@@ -47,6 +47,7 @@ install_omz() {
     print_install_log 'Oh My Zsh'
 
     if [[ -d "$omz_dir" ]]; then
+        # shellcheck disable=SC2088
         print_skipping_log '~/.oh-my-zsh already exists'
         return
     fi
@@ -130,6 +131,7 @@ install_nvim_kickstart() {
     print_install_log 'Neovim kickstart'
 
     if [[ -d "$nvim_config_dir" ]]; then
+        # shellcheck disable=SC2088
         print_skipping_log '~/.config/nvim already exists'
         return
     fi
@@ -150,25 +152,26 @@ install_nvim_kickstart() {
         exit 1
     fi
 
+    print_success 'Neovim kickstart installed'
+}
+
+install_nvim_plugins() {
     echo
     print_install_log 'Neovim plugins'
-    if ! "$NVIM_APPIMAGE" --headless -c 'Lazy install' -c 'qa!'; then
+
+    if ! "$NVIM_APPIMAGE" --headless -c 'Lazy install' -c 'MasonInstall clangd' -c 'qa!'; then
         print_error 'Neovim kickstart lazy install failed'
         exit 1
     fi
 
-    if ! "$NVIM_APPIMAGE" --headless -c 'MasonInstall clangd' -c 'qa!'; then
-        print_error 'Neovim kickstart mason install clangd failed'
-        exit 1
-    fi
-
-    print_success 'Neovim kickstart installed'
+    print_success 'Neovim plugins installed'
 }
 
 install() {
     install_omz
     install_nvim_appimage
     install_nvim_kickstart
+    install_nvim_plugins
 
     echo
     print_success 'Installation complete!'
