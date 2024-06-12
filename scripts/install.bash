@@ -96,10 +96,16 @@ install_nvim_appimage() {
         exit 1
     fi
 
+    # Reinstall the image if it already exists
+    if ! rm -f $NVIM_APPIMAGE; then
+        print_error 'Removing existing nvim.appimage failed'
+        exit 1
+    fi
+
     # The lab machines don't have GBLIC 2.29 which is needed by the latest (v0.10.0) version of nvim
     # so this is a self hosted version of v0.9.5
     # if ! curl -OL https://github.com/neovim/neovim/releases/latest/download/nvim.appimage -o ~/Apps/nvim.appimage; then
-    if ! curl -fsSL https://raw.githubusercontent.com/utk-eecs-crumpton-tas/cs102-downloads/main/apps/nvim.appimage -o ~/Apps/nvim.appimage; then
+    if ! curl -fsSL https://raw.githubusercontent.com/utk-eecs-crumpton-tas/cs102-downloads/main/apps/nvim.appimage -o $NVIM_APPIMAGE; then
         print_error 'Downloading nvim.appimage failed'
         exit 1
     fi
